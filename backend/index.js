@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const corsOption = {
-    origin: ['http://localhost:3000', 'https://chatweb-ca863gllv-praveenxjsxs-projects.vercel.app/'],
+    origin: ['https://chat-application-api.vercel.app/'],
     credentials: true
 };
 app.use(cors(corsOption)); 
