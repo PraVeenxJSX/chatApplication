@@ -19,21 +19,36 @@ const Login = () => {
     try {
       const res = await axios.post(`${BASE_URL}/api/v1/user/login`, user, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        withCredentials: true
+        withCredentials: true,
+        credentials: 'include',
+        mode: 'cors'
       });
-      navigate("/");
-      console.log(res);
-      dispatch(setAuthUser(res.data));
+      
+      if (res && res.data) {
+        // Store the user data in Redux
+        dispatch(setAuthUser(res.data));
+        navigate("/");
+        toast.success('Login successful!');
+      } else {
+        toast.error('Invalid response from server');
+      }
     } catch (error) {
-      toast.error(error.response.data.message);
-      console.log(error);
+      console.error('Login error:', error);
+      if (error.response) {
+        toast.error(error.response.data?.message || 'Login failed');
+      } else if (error.request) {
+        toast.error('No response from server. Please check your connection.');
+      } else {
+        toast.error('An error occurred during login');
+      }
     }
     setUser({
       username: "",
       password: ""
-    })
+    });
   }
   return (
     <div className="w-full max-w-md">

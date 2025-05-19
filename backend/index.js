@@ -17,10 +17,29 @@ app.use(express.json());
 app.use(cookieParser());
 
 const corsOption = {
-    origin: ['https://chat-application-api.vercel.app/'],
-    credentials: true
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 };
-app.use(cors(corsOption)); 
+
+// Apply CORS middleware
+app.use(cors(corsOption));
+
+// Handle preflight requests
+app.options('*', cors(corsOption));
+
+// Add additional headers middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    next();
+});
 
 // Health check route
 app.get('/', (req, res) => {

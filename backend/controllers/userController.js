@@ -41,37 +41,59 @@ export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) {
-            return res.status(400).json({ message: "All fields are required" });
-        };
+            return res.status(400).json({ 
+                success: false,
+                message: "All fields are required" 
+            });
+        }
+
         const user = await User.findOne({ username });
         if (!user) {
-            return res.status(400).json({
-                message: "Incorrect username or password",
-                success: false
-            })
-        };
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect username or password"
+            });
+        }
+
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
-            return res.status(400).json({
-                message: "Incorrect username or password",
-                success: false
-            })
-        };
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect username or password"
+            });
+        }
+
         const tokenData = {
             userId: user._id
         };
 
         const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({
-            _id: user._id,
-            username: user.username,
-            fullName: user.fullName,
-            profilePhoto: user.profilePhoto
-        });
+        return res.status(200)
+            .cookie("token", token, { 
+                maxAge: 1 * 24 * 60 * 60 * 1000, 
+                httpOnly: true, 
+                sameSite: 'strict',
+                secure: process.env.NODE_ENV === 'production'
+            })
+            .json({
+                success: true,
+                message: "Login successful",
+                data: {
+                    _id: user._id,
+                    username: user.username,
+                    fullName: user.fullName,
+                    profilePhoto: user.profilePhoto,
+                    token: token
+                }
+            });
 
     } catch (error) {
-        console.log(error);
+        console.error('Login error:', error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
     }
 }
 export const logout = (req, res) => {
